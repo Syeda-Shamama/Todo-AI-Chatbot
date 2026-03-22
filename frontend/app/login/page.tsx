@@ -28,8 +28,9 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || "Login failed");
+      let data: Record<string, string> = {};
+      try { data = await res.json(); } catch { /* non-JSON response */ }
+      if (!res.ok) throw new Error(data.detail || "Invalid username or password");
       localStorage.setItem("token", data.access_token);
       localStorage.setItem("username", username);
       router.push("/chat");

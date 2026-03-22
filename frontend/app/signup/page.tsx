@@ -28,7 +28,8 @@ export default function SignupPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       });
-      const data = await res.json();
+      let data: Record<string, string> = {};
+      try { data = await res.json(); } catch { /* non-JSON response */ }
       if (!res.ok) throw new Error(data.detail || "Signup failed");
       router.push("/login");
     } catch (err: unknown) {
