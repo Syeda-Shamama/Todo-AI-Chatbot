@@ -1,14 +1,15 @@
 # backend/main.py
 # Task: TASK-005 | Spec: REQ-04
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
 from sqlmodel import Session, select
 from database import create_db_and_tables, get_session
-from models import Conversation, Message
+from models import Conversation, Message, User
 from agent import run_agent
+from auth import hash_password, verify_password, create_access_token, get_current_user
 
 
 @asynccontextmanager
@@ -27,10 +28,13 @@ app.add_middleware(
 )
 
 
+class AuthRequest(BaseModel):
+    username: str
+    password: str
+
 class ChatRequest(BaseModel):
     conversation_id: Optional[int] = None
     message: str
-
 
 class ChatResponse(BaseModel):
     conversation_id: int
@@ -38,8 +42,29 @@ class ChatResponse(BaseModel):
     tool_calls: list
 
 
-@app.post("/api/{user_id}/chat", response_model=ChatResponse)
-async def chat(user_id: str, request: ChatRequest, session: Session = Depends(get_session)):
+@app.post("/signup", status_code=status.HTTP_201_CREATED)
+def signup(request: AuthRequest, session: Session = Depends(get_session)):
+    existing = session.exec(select(User).where(User.username == request.username)).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Username already taken")
+    user = User(username=request.username, hashed_password=hash_password(request.password))
+    session.add(user)
+    session.commit()
+    return {"message": "Account created successfully"}
+
+
+@app.post("/login")
+def login(request: AuthRequest, session: Session = Depends(get_session)):
+    user = session.exec(select(User).where(User.username == request.username)).first()
+    if not user or not verify_password(request.password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+    token = create_access_token(user.username)
+    return {"access_token": token, "token_type": "bearer"}
+
+
+@app.post("/api/chat", response_model=ChatResponse)
+async def chat(request: ChatRequest, session: Session = Depends(get_session), current_user: str = Depends(get_current_user)):
+    user_id = current_user
     # Get or create conversation
     if request.conversation_id:
         conversation = session.get(Conversation, request.conversation_id)

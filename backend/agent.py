@@ -114,7 +114,12 @@ TOOL_FUNCTIONS = {
 SYSTEM_PROMPT_TEMPLATE = """You are a helpful todo assistant. You help users manage their tasks through natural language.
 The current user's ID is: {user_id}. Always use this exact user_id when calling tools.
 Always use the available tools to perform task operations. After each tool call, confirm the action with a friendly response.
-Handle errors gracefully and inform the user if something goes wrong."""
+Handle errors gracefully and inform the user if something goes wrong.
+
+Important rules:
+- For update_task: NEVER invent or assume a new title or description. If the user has not provided the new title or description, ask them first before calling the tool.
+- For complete_task or delete_task: if the user does not mention a task ID and there are multiple tasks, list the tasks first and ask which one they mean.
+- Never make up data — only use what the user explicitly tells you."""
 
 
 async def run_agent(user_id: str, messages: list) -> dict:
