@@ -1,0 +1,37 @@
+# speckit.tasks
+# Task Breakdown — Todo AI Chatbot
+# Format: TASK-XXX | Status | Description | Spec Ref
+
+---
+
+## Backend
+
+| Task ID | Status | Description | Spec Ref |
+|---|---|---|---|
+| TASK-001 | ✅ DONE | Define SQLModel database models: Task, Conversation, Message | REQ-01 |
+| TASK-002 | ✅ DONE | Setup DB engine, session management, create_all tables | REQ-01 |
+| TASK-003 | ✅ DONE | Implement MCP server with 5 tools: add_task, list_tasks, complete_task, delete_task, update_task | REQ-02 |
+| TASK-004 | ✅ DONE | Implement Groq agent with tool calling loop and MCP function mapping | REQ-03 |
+| TASK-005 | ✅ DONE | Implement FastAPI app with POST /api/{user_id}/chat endpoint and stateless conversation flow | REQ-04 |
+
+## Frontend
+
+| Task ID | Status | Description | Spec Ref |
+|---|---|---|---|
+| TASK-006 | ✅ DONE | Build chat UI layout in index.html | REQ-05 |
+| TASK-007 | ✅ DONE | Style chat UI in style.css | REQ-05 |
+| TASK-008 | ✅ DONE | Implement API integration and conversation state in script.js | REQ-05 |
+
+## Config & Deliverables
+
+| Task ID | Status | Description | Spec Ref |
+|---|---|---|---|
+| TASK-009 | ✅ DONE | Create backend/.env with GROQ_API_KEY and DATABASE_URL | speckit.constitution |
+| TASK-010 | ✅ DONE | Create database migration script (backend/migrate.py) | REQ-01 |
+| TASK-011 | ✅ DONE | Create SETUP.md with setup instructions | Deliverable |
+
+---
+
+## Notes
+- All completed tasks must have a Task ID comment in the corresponding code file
+- Format: `# Task: TASK-XXX | Spec: REQ-XX`

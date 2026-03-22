@@ -1,0 +1,78 @@
+# speckit.plan
+# HOW — Architecture & Approach
+# Project: Todo AI Chatbot
+
+---
+
+## Folder Structure
+
+```
+todo-AI-chatbot/
+├── backend/
+│   ├── models.py       # REQ-01 — SQLModel DB models
+│   ├── database.py     # REQ-01 — DB engine & session
+│   ├── mcp_server.py   # REQ-02 — MCP tools
+│   ├── agent.py        # REQ-03 — Groq agent
+│   ├── main.py         # REQ-04 — FastAPI app & chat endpoint
+│   ├── requirements.txt
+│   └── .env            # GROQ_API_KEY, DATABASE_URL
+├── frontend/
+│   ├── index.html      # REQ-05 — Chat UI
+│   ├── style.css       # REQ-05 — Styling
+│   └── script.js       # REQ-05 — API integration
+├── specs/
+│   ├── mcp_tools.md
+│   └── agent_behavior.md
+├── speckit.constitution
+├── speckit.specify
+├── speckit.plan        # this file
+└── speckit.tasks
+```
+
+---
+
+## Request Flow
+
+```
+Frontend (index.html/script.js)
+    │  POST /api/{user_id}/chat
+    ▼
+FastAPI (main.py)
+    ├── Get/create Conversation in DB
+    ├── Fetch Message history from DB
+    ├── Store user Message in DB
+    ▼
+Groq Agent (agent.py)
+    ├── System prompt + history + new message
+    ├── Groq API call with tool definitions
+    ▼
+MCP Tools (mcp_server.py)
+    ├── add_task / list_tasks / complete_task / delete_task / update_task
+    ▼
+Neon PostgreSQL (database.py + models.py)
+    ▼
+Agent returns response to main.py
+    ├── Store assistant Message in DB
+    └── Return ChatResponse to frontend
+```
+
+---
+
+## Key Decisions
+
+| Decision | Choice | Reason |
+|---|---|---|
+| AI provider | Groq | Free tier, fast, supports tool calling |
+| MCP integration | In-process (not subprocess) | Simpler, no IPC overhead |
+| Tool calling | Groq function calling API | Native support, no extra framework |
+| Frontend | Plain HTML/CSS/JS | No build tools, no npm, fully free |
+| DB | Neon PostgreSQL | Free tier, serverless, compatible with SQLModel |
+
+---
+
+## Environment Variables
+
+| Variable | Description |
+|---|---|
+| GROQ_API_KEY | From console.groq.com (free) |
+| DATABASE_URL | Neon PostgreSQL connection string (free tier) |

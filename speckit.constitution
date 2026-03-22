@@ -1,0 +1,58 @@
+# speckit.constitution
+# WHY — Principles & Constraints
+# Project: Todo AI Chatbot
+
+---
+
+## Core Purpose
+Build an AI-powered chatbot that lets users manage todos through natural language, using MCP tools as the only interface between the AI agent and the database.
+
+---
+
+## Non-Negotiable Principles
+
+### 1. Stateless Server
+- The server must hold zero in-memory state between requests
+- All state (tasks, conversations, messages) lives exclusively in the database
+- Any server instance must be able to handle any request
+
+### 2. MCP-Only Data Access
+- The AI agent must ONLY interact with tasks through MCP tool calls
+- Direct database queries from agent code are not allowed
+- MCP tools are the single interface for all task operations
+
+### 3. Free Stack Only
+- Every service, API, and tool must have a free tier
+- No credit card required for any dependency
+- Paid services are strictly forbidden
+
+### 4. No OpenAI
+- OpenAI SDK and OpenAI Agents SDK must not be used
+- AI model: Groq API (free tier) with llama-3.3-70b-versatile
+- No OpenAI ChatKit — custom plain HTML/CSS/JS frontend
+
+### 5. Spec-Driven Development
+- No code is written without a referenced Task ID from speckit.tasks
+- Every code file must contain a comment linking it to its Task ID and Spec section
+- Architecture changes require updating speckit.plan
+- Feature changes require updating speckit.specify
+
+---
+
+## Tech Stack Constraints
+
+| Component | Allowed | Forbidden |
+|---|---|---|
+| AI Model | Groq (free tier) | OpenAI, Gemini |
+| Backend | FastAPI + Python | Node.js, Django |
+| ORM | SQLModel | raw SQL, other ORMs |
+| Database | Neon PostgreSQL (free tier) | paid DB services |
+| MCP | Official MCP Python SDK | custom tool protocols |
+| Frontend | Plain HTML/CSS/JS | React, Vue, OpenAI ChatKit |
+
+---
+
+## Security Constraints
+- user_id from URL path is always enforced in every MCP tool call
+- No user can access another user's tasks or conversations
+- API keys stored in .env only — never committed to git

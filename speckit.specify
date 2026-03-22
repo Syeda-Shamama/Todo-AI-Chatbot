@@ -1,0 +1,107 @@
+# speckit.specify
+# WHAT — Features & Requirements
+# Project: Todo AI Chatbot
+
+---
+
+## REQ-01: Database Models
+
+Three SQLModel tables must exist:
+
+**Task**
+- id (int, primary key, auto)
+- user_id (str, required)
+- title (str, required)
+- description (str, optional)
+- completed (bool, default False)
+- created_at (datetime, auto)
+- updated_at (datetime, auto)
+
+**Conversation**
+- id (int, primary key, auto)
+- user_id (str, required)
+- created_at (datetime, auto)
+- updated_at (datetime, auto)
+- messages (relationship → Message[])
+
+**Message**
+- id (int, primary key, auto)
+- conversation_id (int, FK → conversation.id)
+- user_id (str, required)
+- role (str: "user" | "assistant")
+- content (str, required)
+- created_at (datetime, auto)
+
+---
+
+## REQ-02: MCP Server Tools
+
+Five tools exposed via Official MCP Python SDK:
+
+| Tool | Parameters | Returns |
+|---|---|---|
+| add_task | user_id*, title*, description? | task_id, status, title |
+| list_tasks | user_id*, status? (all/pending/completed) | array of task objects |
+| complete_task | user_id*, task_id* | task_id, status, title |
+| delete_task | user_id*, task_id* | task_id, status, title |
+| update_task | user_id*, task_id*, title?, description? | task_id, status, title |
+
+*required
+
+---
+
+## REQ-03: AI Agent
+
+- Provider: Groq API (free tier)
+- Model: llama-3.3-70b-versatile
+- Agent receives: system prompt + conversation history + new user message
+- Agent calls MCP tools to perform task operations
+- Agent returns: natural language response + list of tool calls made
+
+**Behavior Rules:**
+- Adding/creating/remembering → call add_task
+- See/show/list tasks → call list_tasks with appropriate status filter
+- Done/complete/finished → call complete_task
+- Delete/remove/cancel → call delete_task
+- Change/update/rename → call update_task
+- Always confirm actions with a friendly response
+- Gracefully handle task not found errors
+
+---
+
+## REQ-04: Chat API Endpoint
+
+```
+POST /api/{user_id}/chat
+```
+
+**Request:**
+```json
+{ "conversation_id": 1, "message": "Add a task to buy groceries" }
+```
+- conversation_id: optional (creates new if not provided)
+- message: required
+
+**Response:**
+```json
+{ "conversation_id": 1, "response": "Done! Added 'Buy groceries'.", "tool_calls": [] }
+```
+
+**Flow:**
+1. Get or create conversation in DB
+2. Fetch conversation history from DB
+3. Store user message in DB
+4. Run Groq agent with history + MCP tools
+5. Store assistant response in DB
+6. Return response — server holds no state
+
+---
+
+## REQ-05: Frontend Chat UI
+
+- Plain HTML/CSS/JS — no frameworks, no build step
+- Chat bubble interface (user right, assistant left)
+- Sends POST to /api/{user_id}/chat
+- Stores conversation_id from first response, reuses for session
+- Shows loading state while waiting
+- Handles errors gracefully in chat
